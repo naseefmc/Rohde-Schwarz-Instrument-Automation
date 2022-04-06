@@ -28,7 +28,7 @@ cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:DFD ENAB, NHT, BW20, Q6M23, L
 cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:OMOD AP')    #CMW is action as AP
 cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:SSID "myCMW"')    #SSID Config : Name of SSID
 cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:SEC:PASS DIS, "12345678"')    # DATA Security connection
-cmw_wlan.utilities.write_str('ROUT:WLAN:SIGN1:SCEN:SCELl:FLEX SUA1, RF1C, RX1, RF1C, TX1')   # Routing of TX and RX
+cmw_wlan.utilities.write_str('ROUT:WLAN:SIGN1:SCEN:SCELl:FLEX SUA1, RF1C, RX1, RF1C, TX1')   # Routing of TX and RX check which port on cmw lights up
 cmw_wlan.utilities.write_str('SOUR:WLAN:SIGN1:STAT ON')   #Opening Wlan Signalling Window 1
 
 print('Setting up Signalling 1 is Done now waiting 1min before the measurement starts')
