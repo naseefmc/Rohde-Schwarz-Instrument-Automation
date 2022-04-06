@@ -1,6 +1,7 @@
 #Make sure you have install R&S VISA on the computer
 #pip install RsCmwWlanSig 
 #pip install RsCmwBase
+#Language: python
 
 from RsCmwWlanSig import *
 from RsCmwBase import *
