@@ -1,0 +1,59 @@
+#Make sure you have install R&S VISA on the computer
+#pip install RsCmwWlanSig 
+#pip install RsCmwBase
+
+from RsCmwWlanSig import *
+from RsCmwBase import *
+from time import sleep
+import time
+
+cmw_wlan = RsCmwWlanSig('TCPIP::10.202.0.224::INSTR', True, False)   #IP address of the CMW500
+print(f'CMW Identification: {cmw_wlan.utilities.idn_string}')
+
+cmw_wlan.utilities.write_str('*RST')
+instr_option = cmw_wlan.utilities.query_str('*OPT?')
+print(instr_option)
+cmw_wlan.utilities.reset()
+
+sleep(7)   #Settling time selected at random
+#WLAN Signaling Window 1
+cmw_wlan.utilities.write_str('SOUR:WLAN:SIGN1:STAT OFF')   #Opening Wlan Signalling Window 1
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:STAN GNSTd')   #ASTD | GOSTd | NGFStd | ANSTd | GONStd | BSTD | GSTD | GNSTd | ACSTd | AXSTd
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:RFS:CHAN 1')   #Setting Wlan Channel 1, 6, 11 etc
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:RFS:EATT:INP -20')        #External Att. Input 20dB
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:RFS:EATT:OUTP -20')     #External Att. Out -40
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:RFSettings:BOPower 4')   #Burst TX power
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:RFS:EPEP -20')   #Expected RF Received Power
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:DFD ENAB, NHT, BW20, Q6M23, LONG') #D1MBit | D2MBits | C55Mbits | C11Mbits | BR12 | BR34 | QR12 | QR34 | Q1M12 | Q1M34 | Q6M23 | Q6M34
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:OMOD AP')    #CMW is action as AP
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:SSID "myCMW"')    #SSID Config : Name of SSID
+cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:CONN:SEC:PASS DIS, "12345678"')    # DATA Security connection
+cmw_wlan.utilities.write_str('ROUT:WLAN:SIGN1:SCEN:SCELl:FLEX SUA1, RF1C, RX1, RF1C, TX1')   # Routing of TX and RX
+cmw_wlan.utilities.write_str('SOUR:WLAN:SIGN1:STAT ON')   #Opening Wlan Signalling Window 1
+
+print('Setting up Signalling 1 is Done now waiting 1min before the measurement starts')
+sleep(60)
+
+
+
+#PER Measurement Signal Window 1
+connection_state = cmw_wlan.utilities.query_str('SOURce:WLAN:SIGN:STATe:ALL?')
+status = cmw_wlan.utilities.query_str('FETCh:WLAN:SIGN:PSWitched:STATe?')
+print(connection_state)
+print(status)
+
+if status == 'ASS':
+    cmw_wlan.utilities.write_str('INIT:WLAN:SIGN1:PER')  # Start PER Measurement
+    sleep(5)
+    cmw_wlan.utilities.write_str('STOP:WLAN:SIGN1:PER')  # Stop PER Measurement
+    cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:PER:FDEF NHT, BW20, Q6M23')  # Set PER Connection Modulation Scheme
+    cmw_wlan.utilities.write_str('CONF:WLAN:SIGN1:PER:PACK 100')  # PER Measureent Setting nummber of Packets
+    PER_STATUS = cmw_wlan.utilities.query_str('FETC:WLAN:SIGN1:PER:STAT?')
+    a = cmw_wlan.utilities.query_str('FETC:WLAN:SIGN1:PER?')  # 0, PER, Packets sent, Packets Lost, RX Burst Power
+    cmw_wlan.utilities.query_str('FETC:WLAN:SIGN1:PACK?')  # LAST ACK rate
+    print('PER Measurement from Signalling 1, SSID: myCMW')
+    print(a)
+    print(cmw_wlan.utilities.query_str('FETC:WLAN:SIGN1:PACK?'))
+print('Done with Signalling 1 measurement')
+
+cmw_wlan.close()
