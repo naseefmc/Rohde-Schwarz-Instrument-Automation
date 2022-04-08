@@ -1,0 +1,266 @@
+from RsInstrument import *  # The RsInstrument package is hosted on pypi.org, see Readme.txt for more details
+from time import sleep
+import pyautogui
+import operator
+import os
+import shutil
+import time
+from datetime import datetime
+#import pyvisa
+
+#print(8.75*60*60)
+#sleep(8.75*60*60)    #when the measurement starts
+specan = None
+#RsInstrument.assert_minimum_version('1.14.0.57')
+try:
+	# Adjust the VISA Resource string to fit your instrument
+	fpl = RsInstrument('TCPIP::10.202.0.119::HISLIP', True, False)
+	fpl.visa_timeout = 8000  # Timeout for VISA Read Operations
+	fpl.opc_timeout = 8000  # Timeout for opc-synchronised operations
+	fpl.instrument_status_checking = True  # Error check after each command
+except Exception as ex:
+	print('Error initializing the instrument session:\n' + ex.args[0])
+	exit()
+
+print(f'Driver Version: {fpl.driver_version}')
+print(f'SpecAn IDN: {fpl.idn_string}')
+print(f'SpecAn Options: {",".join(fpl.instrument_options)}')
+
+fpl.write_str('HCOP:DEV:LANG PNG')
+fpl.write_str("HCOP:DEST 'MMEM'")
+
+
+# Measurement1
+fpl.reset()
+fpl.write_str('INP:ATT 3dB')
+fpl.write_str('DISP:TRAC:Y:RLEV -30dBm')
+fpl.write_str('INP:GAIN:STAT ON')
+fpl.write_str('BAND 100 KHz')
+fpl.write_str('SWE:TIME 1000ms')
+fpl.write_str('DISP:TRAC1:MODE MAXH')
+sleep(6)
+
+#File Name
+filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\sc1_FullSPAN.png"    #Change Session  name : _Morning, -Afternoon, -Night
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Afternoon\sc1_FullSPAN.png"
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Night\sc1_FullSPAN.png"
+fpl.write_str(f'MMEM:NAME "{filePathInstr}"')
+
+fpl.write_str('HCOP:IMM')
+
+#transfer to PC
+filePathPc = r"C:\Users\naseef\Desktop\TEst\Session Morning\sc1_FullSPAN.png"
+fpl.query_opc()
+fpl.read_file_from_instrument_to_pc(filePathInstr,filePathPc)
+
+
+#trace export
+filePathTrace = r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\trace_FullSPAN.png"
+fpl.write_str(f'MMEM:NAME "{filePathTrace}"')
+TraceData=fpl.query_str('Trace:DATA? TRACe1')                        # Read y data of trace 1
+TracePoints=fpl.query_str('TRACe:DATA:X? Trace1')                    # Read the corresponding x data
+NoSweepPoints = fpl.query_str('SWEep:POINts?')                       # Request for the number of sweep points
+
+CSVTraceData=TraceData.split(",")                                           # Slice the amplitude list into a tuple
+CSVTracePoints=TracePoints.split(",")                                       # Slice the frequency list into a tuple
+
+    # now file writing begins
+file = open (r'C:\Users\naseef\Desktop\TEst\Session Morning\TraceFile_Morning.CSV', 'w')                                 # Open File for writing
+file.write("Frequency in Hz;Power in dBm\n")                                # Write the headline
+x=0                                                                         # Set counter to 0 as touple does not begin with 1
+while x < int(NoSweepPoints):                                               # Perform loop until all sweep points are covered
+    file.write(CSVTracePoints [x])                                          # Write amplitude measurement data
+    file.write(";")                                                         # Add semicolon as CSV separator
+    file.write(CSVTraceData [x])                                            # Write frequency data
+    file.write("\n")                                                        # Add a new line control character
+    x=x+1                                                                   # Increment counter
+file.close()
+print('DONE Measurement 1_ Morning')
+print('Copy CSV Trace FILE to correct location')
+
+
+
+# Measurement1
+fpl.reset()
+fpl.write_str('INP:ATT 3dB')
+fpl.write_str('DISP:TRAC:Y:RLEV -40dBm')
+fpl.write_str('INP:GAIN:STAT ON')
+fpl.write_str('FREQ:CENT 2.5 GHz')
+fpl.write_str('FREQ:SPAN 1.2 GHz')
+fpl.write_str('BAND 100 KHz')
+fpl.write_str('SWE:TIME 50ms')
+fpl.write_str('DISP:TRAC1:MODE MAXH')
+sleep(6)
+#File Name
+filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\sc5_1G_100KHzRBW.png"    #Change Session  name : _Morning, -Afternoon, -Night
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Afternoon\sc5_250M_100KHzRBW.png"
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Night\sc5_250M_100KHzRBW.png"   #Change Session Name: : _Morning, -Afternoon, -Night
+fpl.write_str(f'MMEM:NAME "{filePathInstr}"')
+fpl.write_str('HCOP:IMM')
+#transfer to PC
+filePathPc = r"C:\Users\naseef\Desktop\TEst\Session Morning\sc5_1G_100KHzRBW.png"
+fpl.query_opc()
+fpl.read_file_from_instrument_to_pc(filePathInstr,filePathPc)
+print('DONE Measurement 5')
+
+#trace export
+filePathTrace = r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\trace_ISMBand_2.4GHz.png"
+fpl.write_str(f'MMEM:NAME "{filePathTrace}"')
+TraceData=fpl.query_str('Trace:DATA? TRACe1')                        # Read y data of trace 1
+TracePoints=fpl.query_str('TRACe:DATA:X? Trace1')                    # Read the corresponding x data
+NoSweepPoints = fpl.query_str('SWEep:POINts?')                       # Request for the number of sweep points
+
+CSVTraceData=TraceData.split(",")                                           # Slice the amplitude list into a tuple
+CSVTracePoints=TracePoints.split(",")                                       # Slice the frequency list into a tuple
+
+    # now file writing begins
+file = open (r'C:\Users\naseef\Desktop\TEst\Session Morning\TraceFile_Morning_but_ISMBAND_2.4GHz.CSV', 'w')                                 # Open File for writing
+file.write("Frequency in Hz;Power in dBm\n")                                # Write the headline
+x=0                                                                         # Set counter to 0 as touple does not begin with 1
+while x < int(NoSweepPoints):                                               # Perform loop until all sweep points are covered
+    file.write(CSVTracePoints [x])                                          # Write amplitude measurement data
+    file.write(";")                                                         # Add semicolon as CSV separator
+    file.write(CSVTraceData [x])                                            # Write frequency data
+    file.write("\n")                                                        # Add a new line control character
+    x=x+1                                                                   # Increment counter
+file.close()
+
+print('Copy 2.4GHz CSV Trace FILE to correct location')
+
+# Measurement 2
+
+fpl.write_str('FREQ:CENT 5.5 GHz')
+fpl.write_str('BAND 100 KHz')
+fpl.write_str('FREQ:SPAN 1.2 GHz')
+fpl.write_str('SWE:TIME 50ms')
+sleep(6)
+#File Name
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\sc5_250M_100KHzRBW.png"    #Change Session  name : _Morning, -Afternoon, -Night
+filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session Morning\sc6_1G_100KHzRBW.png"
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Night\sc5_250M_100KHzRBW.png"   #Change Session Name: : _Morning, -Afternoon, -Night
+fpl.write_str(f'MMEM:NAME "{filePathInstr}"')
+fpl.write_str('HCOP:IMM')
+#transfer to PC
+filePathPc = r"C:\Users\naseef\Desktop\TEst\Session Morning\sc6_1G_100KHzRBW.png"
+fpl.query_opc()
+fpl.read_file_from_instrument_to_pc(filePathInstr,filePathPc)
+
+
+#trace export
+filePathTrace = r"C:\Users\Instrument\Desktop\FPLSCGrab\Session Morning\trace_ISMBand_5GHz.png"
+fpl.write_str(f'MMEM:NAME "{filePathTrace}"')
+TraceData=fpl.query_str('Trace:DATA? TRACe1')                        # Read y data of trace 1
+TracePoints=fpl.query_str('TRACe:DATA:X? Trace1')                    # Read the corresponding x data
+NoSweepPoints = fpl.query_str('SWEep:POINts?')                       # Request for the number of sweep points
+
+CSVTraceData=TraceData.split(",")                                           # Slice the amplitude list into a tuple
+CSVTracePoints=TracePoints.split(",")                                       # Slice the frequency list into a tuple
+
+    # now file writing begins
+file = open (r'C:\Users\naseef\Desktop\TEst\Session Morning\TraceFile_Morning_but_ISMBAND_5GHz.CSV', 'w')                                 # Open File for writing
+file.write("Frequency in Hz;Power in dBm\n")                                # Write the headline
+x=0                                                                         # Set counter to 0 as touple does not begin with 1
+while x < int(NoSweepPoints):                                               # Perform loop until all sweep points are covered
+    file.write(CSVTracePoints [x])                                          # Write amplitude measurement data
+    file.write(";")                                                         # Add semicolon as CSV separator
+    file.write(CSVTraceData [x])                                            # Write frequency data
+    file.write("\n")                                                        # Add a new line control character
+    x=x+1                                                                   # Increment counter
+file.close()
+
+print('DONE Measurement 6')
+print('Copy 5GHz CSV Trace FILE to correct location')
+
+
+# Measurement 3
+
+fpl.write_str('FREQ:CENT 3.7 GHz')
+fpl.write_str('BAND 100 KHz')
+fpl.write_str('FREQ:SPAN 1.2 GHz')
+fpl.write_str('SWE:TIME 50ms')
+sleep(6)
+#File Name
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\sc5_250M_100KHzRBW.png"    #Change Session  name : _Morning, -Afternoon, -Night
+filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\sc7_1G_100KHzRBW.png"
+#filePathInstr =r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Night\sc5_250M_100KHzRBW.png"   #Change Session Name: : _Morning, -Afternoon, -Night
+fpl.write_str(f'MMEM:NAME "{filePathInstr}"')
+fpl.write_str('HCOP:IMM')
+#transfer to PC
+filePathPc = r"C:\Users\naseef\Desktop\TEst\Session Morning\sc7_1G_100KHzRBW.png"
+fpl.query_opc()
+fpl.read_file_from_instrument_to_pc(filePathInstr,filePathPc)
+
+
+#trace export
+filePathTrace = r"C:\Users\Instrument\Desktop\FPLSCGrab\Session_Morning\trace_ISMBand_3GHz.png"
+fpl.write_str(f'MMEM:NAME "{filePathTrace}"')
+TraceData=fpl.query_str('Trace:DATA? TRACe1')                        # Read y data of trace 1
+TracePoints=fpl.query_str('TRACe:DATA:X? Trace1')                    # Read the corresponding x data
+NoSweepPoints = fpl.query_str('SWEep:POINts?')                       # Request for the number of sweep points
+
+CSVTraceData=TraceData.split(",")                                           # Slice the amplitude list into a tuple
+CSVTracePoints=TracePoints.split(",")                                       # Slice the frequency list into a tuple
+
+    # now file writing begins
+file = open (r'C:\Users\naseef\Desktop\TEst\Session Morning\TraceFile_Morning_but_ISMBAND_3GHz.CSV', 'w')                                 # Open File for writing
+file.write("Frequency in Hz;Power in dBm\n")                                # Write the headline
+x=0                                                                         # Set counter to 0 as touple does not begin with 1
+while x < int(NoSweepPoints):                                               # Perform loop until all sweep points are covered
+    file.write(CSVTracePoints [x])                                          # Write amplitude measurement data
+    file.write(";")                                                         # Add semicolon as CSV separator
+    file.write(CSVTraceData [x])                                            # Write frequency data
+    file.write("\n")                                                        # Add a new line control character
+    x=x+1                                                                   # Increment counter
+file.close()
+print('DONE Measurement 7')
+print('Copy 3GHz CSV Trace FILE to correct location')
+print('Finished')
+#fpl.clear_status()
+fpl.close()
+
+#Moving & Renaming Files
+#Create new folder at destination
+current_date= datetime.now()
+
+location =  r"C:/Users/naseef/Desktop/CAROEM/Spectrum Monitoring Office/ScreenGrabs/Planegg/Session Morning/"
+dir = os.path.join(location , "Session_Morning_")
+new_folder_name = dir +  current_date.strftime('%d_%m_%Y')
+if not os.path.exists(dir):
+    os.mkdir(new_folder_name)
+print(new_folder_name)
+source = r"C:/Users/naseef/Desktop/TEst/Session Morning/"
+destination = new_folder_name + '/'
+
+
+#rename and moving .csv files
+old_name_FS = "C:/Users/naseef/Desktop/TEst/Session Morning/TraceFile_Morning.CSV" # Full Span
+old_name_2_GHz = "C:/Users/naseef/Desktop/TEst/Session Morning/TraceFile_Morning_but_ISMBAND_2.4GHz.CSV" # 2.4 GHz
+old_name_5_GHz = "C:/Users/naseef/Desktop/TEst/Session Morning/TraceFile_Morning_but_ISMBAND_5GHz.CSV" # 5 GHz
+old_name_3_GHz = "C:/Users/naseef/Desktop/TEst/Session Morning/TraceFile_Morning_but_ISMBAND_3GHz.CSV" # 3.5 GHz 5GNR
+new_name_FS = "C:/Users/naseef/Desktop/CAROEM/Spectrum Monitoring Office/Spectrum Traces/Planegg/Session Morning/Full Span/TraceFile_Morning_" + current_date.strftime('%d_%m_%Y') + ".CSV" # Full Span
+new_name_2_GHz = "C:/Users/naseef/Desktop/CAROEM/Spectrum Monitoring Office/Spectrum Traces/Planegg/Session Morning/ISM 2.4GHz/TraceFile_Morning_but_ISMBAND_2.4GHz_" + current_date.strftime('%d_%m_%Y') + ".CSV" # 2.4 GHz
+new_name_5_GHz = "C:/Users/naseef/Desktop/CAROEM/Spectrum Monitoring Office/Spectrum Traces/Planegg/Session Morning/ISM 5GHz/TraceFile_Morning_but_ISMBAND_5GHz_" + current_date.strftime('%d_%m_%Y') + ".CSV" # 5 GHz
+new_name_3_GHz = "C:/Users/naseef/Desktop/CAROEM/Spectrum Monitoring Office/Spectrum Traces/Planegg/Session Morning/5G FR1/TraceFile_Morning_but_ISMBAND_3GHz_" + current_date.strftime('%d_%m_%Y') + ".CSV" # 3.5 GHz
+
+"""
+if os.path.isfile is new_name_FS or new_name_2_GHz or new_name_3_GHz or new_name_5_GHz:
+    print("The file already exists")
+else:
+"""
+    # Rename the file
+os.rename(old_name_FS, new_name_FS)
+os.rename( old_name_2_GHz, new_name_2_GHz )
+os.rename( old_name_3_GHz, new_name_3_GHz )
+os.rename( old_name_5_GHz, new_name_5_GHz )
+
+#Move rest of .png file
+allfiles = os.listdir( source )
+
+for f in allfiles:
+
+    shutil.move( source + f, destination + f )
+
+
+print('Done Moving Files')
+
+
