@@ -2,6 +2,7 @@
 
 # CMW500-WLAN-Config
 CMW500 WLAN automatic config &amp; DUT association
+
 #pip install RsCmwWlanSig RsCmwBase
 
 
@@ -11,4 +12,4 @@ CMW500 WLAN automatic config &amp; DUT association
 # FPL Config
 #pip install RsInstrument 
 
-#pip install RsInstrument 
+
