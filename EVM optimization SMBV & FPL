@@ -1,0 +1,69 @@
+
+from RsSmbv import *
+from RsInstrument import *  # The RsInstrument package is hosted on pypi.org, see Readme.txt for more details
+from time import sleep
+import operator
+
+
+specan = None
+#RsInstrument.assert_minimum_version('1.14.0.57')
+try:
+	# Adjust the VISA Resource string to fit your instrument
+	fpl = RsInstrument('TCPIP::10.202.0.108::HISLIP', True, False)
+	fpl.visa_timeout = 3000  # Timeout for VISA Read Operations
+	fpl.opc_timeout = 3000  # Timeout for opc-synchronised operations
+	fpl.instrument_status_checking = True  # Error check after each command
+except Exception as ex:
+	print('Error initializing the instrument session:\n' + ex.args[0])
+	exit()
+
+print(f'Driver Version: {fpl.driver_version}')
+print(f'SpecAn IDN: {fpl.idn_string}')
+print(f'SpecAn Options: {",".join(fpl.instrument_options)}')
+
+#SMBV setting initialization
+
+
+RsSmbv.assert_minimum_version('4.80.2')
+smbv = RsSmbv('TCPIP::10.202.0.206::HISLIP')
+# smbv = RsSmbv('TCPIP::10.112.1.179::5025::SOCKET', options='SelectVisa=SocketIo') # No VISA needed
+print(f'Driver Info: {smbv.utilities.driver_version}')
+print(f'Instrument: {smbv.utilities.idn_string}')
+
+# Instrument options are properly parsed, and sorted (k-options first)
+print(f'Instrument options: {",".join(smbv.utilities.instrument_options)}')
+
+# Driver's instrument status checking ( SYST:ERR? ) after each command (default value is True):
+#smbv.source.bb.evdo.preset()
+smbv.utilities.instrument_status_checking = True
+#smbv.system.preset()
+smbv.output.state.set_value(True)
+
+rf = {}
+
+Pin = range(-20, 1,1)
+for pw in Pin:
+    smbv.source.power.level.immediate.set_amplitude(pw)
+    sleep( 1 )
+    print( f'PEP level: {smbv.source.power.get_pep()} dBm' )
+    EVM_values = [fpl.query( 'CALC2:MARK:FUNC:DDEM:STAT:EVM? AVG' )]
+    print(EVM_values)
+    sleep( 1 )
+    rf[pw]=EVM_values
+
+print("the EVM at -18 dBM is:", rf[-18])
+print("the EVM at -4 dBm is:", rf[-4])
+print("the EVM at -10 dBM is:", rf[-10])
+print("the EVM at 0 dBM is:", rf[0])
+print(min(rf.items(), key=operator.itemgetter(1))[0])
+smbv.source.power.level.immediate.set_amplitude( min(rf.items(), key=operator.itemgetter(1))[0] )
+
+print( EVM_values )
+
+
+
+print('DONE Running Configuration')
+#fpl.clear_status()
+fpl.close()
+
+smbv.close()
