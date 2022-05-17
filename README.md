@@ -13,4 +13,5 @@ Automate CMW500 WLAN , SMBV, FPL
 # FPL Config
 #pip install RsInstrument 
 
-
+# SMW Config
+#pip install RsInstrument 
