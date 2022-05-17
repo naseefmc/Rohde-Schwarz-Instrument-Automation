@@ -17,8 +17,8 @@ except Exception as ex:
 	exit()
 
 print(f'Driver Version: {smw.driver_version}')
-print(f'SpecAn IDN: {smw.idn_string}')
-print(f'SpecAn Options: {",".join(smw.instrument_options)}')
+print(f'VSG IDN: {smw.idn_string}')
+print(f'VSG Options: {",".join(smw.instrument_options)}')
 
 smw.clear_status()
 smw.reset()
@@ -61,5 +61,7 @@ smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam2:FOFFset -25000000')
 smw.write_str('SOURce1:FREQuency:CW 2437000000')
 smw.write_str('OUTPut1:STATe 1')
 smw.write_str('SOURce1:POWer:POWer 10')
+
+print("Done with EMI config.")
 
 smw.close()
