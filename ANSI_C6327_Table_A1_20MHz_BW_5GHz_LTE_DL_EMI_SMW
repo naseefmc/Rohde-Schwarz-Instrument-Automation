@@ -36,21 +36,34 @@ smw.write_str('SCONfiguration:OUTPut:MAPPing:RF1:STReam3:STATe 1')
 smw.write_str('SCONfiguration:OUTPut:MAPPing:RF2:STReam2:STATe 0')
 smw.write_str('SCONfiguration:OUTPut:MAPPing:IQOutput1:STReam3:STATe 0')
 
-#### Baseband_1 config 11n  #####
+"""
+#### Baseband_1 config WLAN IEEE 802.11n  #####
 smw.write_str('ENTity1:SOURce1:BB:WLNN:FBLock1:STANdard WN')
 smw.write_str('ENTity1:SOURce1:BB:WLNN:FBLock1:ITIMe 0.005')
 smw.write_str('ENTity1:SOURce1:BB:WLNN:STATe 1')
-
-
-#### Baseband_3 config 11n  #####
 smw.write_str('ENTity2:SOURce1:BB:WLNN:FBLock1:STANdard WN')
 smw.write_str('ENTity2:SOURce1:BB:WLNN:FBLock1:ITIMe 0.002')
 smw.write_str('ENTity2:SOURce1:BB:WLNN:STATe 1')
-
-#### Baseband_3 config 11n  #####
 smw.write_str('ENTity3:SOURce1:BB:WLNN:FBLock1:STANdard WN')
 smw.write_str('ENTity3:SOURce1:BB:WLNN:FBLock1:ITIMe 0.003')
 smw.write_str('ENTity3:SOURce1:BB:WLNN:STATe 1')
+"""
+
+#### Baseband_1 config LTE  #####
+smw.write_str('ENTity1:SOURce1:BB:EUTR:LINK DOWN')
+smw.write_str('ENTity1:SOURce1:BB:EUTR:DL:BW BW20_00')
+smw.write_str('ENTity1:SOURce1:BB:EUTR:STATe 1')
+
+
+#### Baseband_2 config LTE  #####
+smw.write_str('ENTity2:SOURce1:BB:EUTR:LINK DOWN')
+smw.write_str('ENTity2:SOURce1:BB:EUTR:DL:BW BW20_00')
+smw.write_str('ENTity2:SOURce1:BB:EUTR:STATe 1')
+
+#### Baseband_3 config LTE  #####
+smw.write_str('ENTity3:SOURce1:BB:EUTR:LINK DOWN')
+smw.write_str('ENTity3:SOURce1:BB:EUTR:DL:BW BW20_00')
+smw.write_str('ENTity3:SOURce1:BB:EUTR:STATe 1')
 
 """
 #### Table A.1  _5GHz_ 20MHz Bandwidth _ Set 3 concurrent EMI on WLAN Channel 40, 36 & 44   #####
