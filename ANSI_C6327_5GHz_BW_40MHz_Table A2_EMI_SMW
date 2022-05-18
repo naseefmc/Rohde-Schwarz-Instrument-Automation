@@ -1,0 +1,106 @@
+from RsInstrument import *
+from time import sleep
+smw = None
+RsInstrument.assert_minimum_version('1.19.0.75')
+
+try:
+	# Adjust the VISA Resource string to fit your instrument
+	smw = RsInstrument('TCPIP::10.202.0.159::INSTR', True, False)
+	smw.visa_timeout = 3000  # Timeout for VISA Read Operations
+	smw.opc_timeout = 3000  # Timeout for opc-synchronised operations
+	smw.instrument_status_checking = True  # Error check after each command
+except Exception as ex:
+	print('Error initializing the instrument session:\n' + ex.args[0])
+	exit()
+
+print(f'Driver Version: {smw.driver_version}')
+print(f'VSG IDN: {smw.idn_string}')
+print(f'VSG Options: {",".join(smw.instrument_options)}')
+
+smw.clear_status()
+smw.reset()
+
+
+#### System Config Advanced Mode  #####
+smw.write_str('SCONfiguration:MODE ADV')
+smw.write_str('SCONfiguration:FADing SISO3X1X1')
+smw.write_str('SCONfiguration:APPLy ')
+
+#### IQ MApper routing through RF Path A  #####
+smw.write_str('SCONfiguration:OUTPut:MAPPing:RF1:MODE ADD')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:RF1:STReam2:STATe 1')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:RF1:STReam3:STATe 1')
+
+
+#### IQ MApper switch off #####
+smw.write_str('SCONfiguration:OUTPut:MAPPing:RF2:STReam2:STATe 0')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:IQOutput1:STReam3:STATe 0')
+
+#### Baseband_1 config 11n  #####
+smw.write_str('ENTity1:SOURce1:BB:WLNN:BW BW40')
+smw.write_str('ENTity1:SOURce1:BB:WLNN:FBLock1:STANdard WN')
+smw.write_str('ENTity1:SOURce1:BB:WLNN:STATe 1')
+sleep(3)
+
+#### Baseband_2 config 11n  #####
+smw.write_str('ENTity2:SOURce1:BB:WLNN:BW BW40')
+smw.write_str('ENTity2:SOURce1:BB:WLNN:FBLock1:STANdard WN')
+smw.write_str('ENTity2:SOURce1:BB:WLNN:STATe 1')
+sleep(3)
+
+#### Baseband_3 config 11n  #####
+smw.write_str('ENTity3:SOURce1:BB:WLNN:BW BW40')
+smw.write_str('ENTity3:SOURce1:BB:WLNN:FBLock1:STANdard WN')
+smw.write_str('ENTity3:SOURce1:BB:WLNN:STATe 1')
+sleep(3)
+
+"""
+#### Table A.2  _5GHz_ 40MHz Bandwidth _ Set 3 concurrent EMI on WLAN Channel 46, 38 & 54   #####
+smw.write_str('SCONfiguration:APPLy')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam3:FOFFset 40000000')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam2:FOFFset -40000000')
+smw.write_str('SOURce1:FREQuency:CW 5230000000')
+smw.write_str('OUTPut1:STATe 1')
+smw.write_str('SOURce1:POWer:POWer 10')
+"""
+"""
+#### Table A.2  _5GHz_ 40MHz Bandwidth _ Set 3 concurrent EMI on WLAN Channel 54,46 & 62   #####
+smw.write_str('SCONfiguration:APPLy')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam3:FOFFset 40000000')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam2:FOFFset -40000000')
+smw.write_str('SOURce1:FREQuency:CW 5270000000')
+smw.write_str('OUTPut1:STATe 1')
+smw.write_str('SOURce1:POWer:POWer 10')
+"""
+
+
+"""
+#### Table A.2  _5GHz_ 40MHz Bandwidth _ Set 3 concurrent EMI on WLAN Channel 118, 110 & 126  #####
+smw.write_str('SCONfiguration:APPLy')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam3:FOFFset 40000000')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam2:FOFFset -40000000')
+smw.write_str('SOURce1:FREQuency:CW 5590000000')
+smw.write_str('OUTPut1:STATe 1')
+smw.write_str('SOURce1:POWer:POWer 10')
+"""
+
+#### Table A.1  _5GHz_ 40MHz Bandwidth _ Set 3 concurrent EMI on WLAN Channel 159, 151 & 165   #####
+smw.write_str('SCONfiguration:APPLy')
+smw.write_str('ENTity3:SOURce1:BB:WLNN:BW BW20')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam3:FOFFset 30000000')
+smw.write_str('SCONfiguration:OUTPut:MAPPing:STReam2:FOFFset -40000000')
+smw.write_str('SOURce1:FREQuency:CW 5795000000')
+smw.write_str('OUTPut1:STATe 1')
+smw.write_str('SOURce1:POWer:POWer 10')
+
+"""
+# To change the duty cycle
+smw.write_str('ENTity1:SOURce1:BB:WLNN:FBLock1:ITIMe 0.005')
+sleep(5)
+smw.write_str('ENTity2:SOURce1:BB:WLNN:FBLock1:ITIMe 0.002')
+sleep(5)
+smw.write_str('ENTity3:SOURce1:BB:WLNN:FBLock1:ITIMe 0.003')
+"""
+print("Done with EMI config.")
+
+smw.close()
